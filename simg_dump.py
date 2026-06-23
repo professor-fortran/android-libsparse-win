@@ -34,8 +34,6 @@ Usage: %s [-v] [-s] [-c <filename>] sparse_image_file ...
 
 
 def main():
-  signal.signal(signal.SIGPIPE, signal.SIG_DFL)
-
   me = posixpath.basename(sys.argv[0])
 
   # Parse the command line
