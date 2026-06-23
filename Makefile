@@ -6,6 +6,8 @@ CXXFLAGS       += -Doff64_t=off_t -Dlseek64=lseek -Dftruncate64=ftruncate -D_GNU
 MSYS2_BIN_DIR  ?= $(shell cygpath -m /usr/bin)
 DIST_DIR       ?= dist
 
+VERSION         = $(shell git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+
 # libsparse
 LIB_NAME        = sparse
 SLIB            = lib$(LIB_NAME).a
@@ -67,4 +69,4 @@ clean:
 
 dist: $(BINS)
 		mkdir -p $(DIST_DIR)
-		zip -j $(DIST_DIR)/android-libsparse-win.zip $(BINS) $(MSYS2_BIN_DIR)/msys-2.0.dll simg_dump.py
+		zip -j $(DIST_DIR)/android-libsparse-win-$(VERSION).zip $(BINS) $(MSYS2_BIN_DIR)/msys-2.0.dll simg_dump.py
