@@ -6,6 +6,8 @@ CXXFLAGS       += -Doff64_t=off_t -Dlseek64=lseek -Dftruncate64=ftruncate -D_GNU
 MSYS2_BIN_DIR  ?= $(shell cygpath -m /usr/bin)
 DIST_DIR       ?= dist
 
+PYINSTALLER_DIR = pyinstaller_build
+
 VERSION         = $(shell git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
 
 # libsparse
@@ -26,7 +28,7 @@ LIB_OBJS        = $(LIB_SRCS:%.cpp=%.o)
 LDFLAGS        += -L. -l$(LIB_NAME) -lz -static
 
 # Перечисляем exe-шники, которые будем собирать.
-BINS            = simg2img.exe img2simg.exe append2simg.exe
+BINS            = simg2img.exe img2simg.exe append2simg.exe simg_dump.exe
 
 # Каталоги заголовочных файлов вне папки проекта (папки рекурсивно не перебираются).
 LIB_INCS        = -Iinclude -Iandroid-base/include
@@ -40,6 +42,9 @@ IMG2SIMG_SRC    = img2simg.cpp
 # append2simg
 APPEND2SIMG_SRC = append2simg.cpp
 
+# simg_dump
+SIMG_DUMP_SRC   = simg_dump.py
+
 # Запрещаем использовать наличие данных папок как признак, что одноименные цели для make уже выполнены.
 .PHONY: default all clean dist
 
@@ -51,9 +56,9 @@ all: $(BINS)
 		$(CXX) $(CXXFLAGS) $(LIB_INCS) -c $< -o $@
 
 $(SLIB): $(LIB_OBJS)
-		# Создание архива (без сжатия) совокупности объектных файлов всех библиотек.
+# Создание архива (без сжатия) совокупности объектных файлов всех библиотек.
 		ar rc $(SLIB) $(LIB_OBJS)
-		# Индексация (по сути, создание оглавления) для архива библиотек. Писать эту строчку не обязательно, потому что современные версии ar делают это по умолчанию сами.
+# Индексация (по сути, создание оглавления) для архива библиотек. Писать эту строчку не обязательно, потому что современные версии ar делают это по умолчанию сами.
 		ranlib $(SLIB)
 
 simg2img.exe: $(SIMG2IMG_SRC) $(SLIB)
@@ -65,10 +70,13 @@ img2simg.exe: $(IMG2SIMG_SRC) $(SLIB)
 append2simg.exe: $(APPEND2SIMG_SRC) $(SLIB)
 		$(CXX) $(CXXFLAGS) $(LIB_INCS) $< -o $@ $(LDFLAGS)
 
+simg_dump.exe: $(SIMG_DUMP_SRC)
+		/mingw64/bin/pyinstaller --onefile --specpath $(PYINSTALLER_DIR) --workpath $(PYINSTALLER_DIR) --distpath . --name $@ $<
+
 clean:
 		$(RM) $(BINS) $(LIB_OBJS) $(SLIB)
-		$(RM) -r $(DIST_DIR)
+		$(RM) -r $(DIST_DIR) $(PYINSTALLER_DIR)
 
 dist: $(BINS)
 		mkdir -p $(DIST_DIR)
-		zip -j $(DIST_DIR)/android-libsparse-win-$(VERSION).zip $(BINS) $(MSYS2_BIN_DIR)/msys-2.0.dll simg_dump.py
+		zip -j $(DIST_DIR)/android-libsparse-win-$(VERSION).zip $(BINS) $(MSYS2_BIN_DIR)/msys-2.0.dll

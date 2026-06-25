@@ -4,3 +4,4 @@
 *.exe
 
 dist/
+pyinstaller_build/
