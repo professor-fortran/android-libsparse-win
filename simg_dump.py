@@ -63,7 +63,7 @@ def main():
     usage(me)
 
   if csvfilename:
-    csvfile = open(csvfilename, "wb")
+    csvfile = open(csvfilename, "w", encoding="utf-8", newline="")
     csvwriter = csv.writer(csvfile)
 
   output = verbose or csvfilename or showhash
